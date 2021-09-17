@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 public class playerScript : MonoBehaviour
 {
-    public GameObject rightPosition, leftPosition, deadPrefab, pauseMenu, getReadyMenu;
+    public GameObject rightPosition, leftPosition, deadPrefab, pauseMenu, getReadyMenu, levelText, countDownText;
     bool changePosition, startGame, isPause;
     public float speed;
     // Start is called before the first frame update
@@ -13,37 +15,45 @@ public class playerScript : MonoBehaviour
     {
         isPause = false;
         pauseMenu.SetActive(false);
-        getReadyMenu.SetActive(false);
+        getReadyMenu.SetActive(true);
+        levelText.GetComponent<TextMeshProUGUI>().text = "Level "+SceneManager.GetActiveScene().buildIndex.ToString();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(startGame){
+        if(startGame && !isPause){
             // Push player forward
             GetComponent<Rigidbody>().AddForce(Vector3.forward * speed * Time.deltaTime);
-        }
-
-        // Switch player to right
-        if(changePosition == true && startGame == true){
-            transform.position = Vector3.Lerp(transform.position, new Vector3(rightPosition.transform.position.x, transform.position.y, transform.position.z), 10f * Time.deltaTime);
-        }
-        // Switch player to left
-        if(changePosition == false && startGame == true){
-            transform.position = Vector3.Lerp(transform.position, new Vector3(leftPosition.transform.position.x, transform.position.y, transform.position.z), 10f * Time.deltaTime);
-        }
-        // Mouseclick to switch sides
-        if(Input.GetMouseButtonDown(0)){
-
-            startGame = true;
-
-            if(changePosition == false){
-                changePosition = true;
-            } else if(changePosition == true){
-                changePosition = false;
+            // Switch player to right
+            if(changePosition == true && startGame == true){
+                transform.position = Vector3.Lerp(transform.position, new Vector3(rightPosition.transform.position.x, transform.position.y, transform.position.z), 10f * Time.deltaTime);
+            }
+            // Switch player to left
+            if(changePosition == false && startGame == true){
+                transform.position = Vector3.Lerp(transform.position, new Vector3(leftPosition.transform.position.x, transform.position.y, transform.position.z), 10f * Time.deltaTime);
             }
         }
-        
+
+        // Mouseclick to switch sides
+        if(Input.GetMouseButtonDown(0)){ 
+            if(startGame && !isPause){
+                if(changePosition == false){
+                    changePosition = true;
+                } else if(changePosition == true){
+                    changePosition = false;
+                }
+            }
+            else if(!startGame || !isPause){
+                StartCoroutine(countDown(3));
+            }
+        }
+
+        // If Pause keybind pressed
+        if(Input.GetKeyDown(KeyCode.Escape)){
+            isPause = true;
+            pauseMenu.SetActive(true);
+        }
     }
     
     void OnTriggerEnter(Collider other){
@@ -58,5 +68,31 @@ public class playerScript : MonoBehaviour
         if(other.tag == "finish"){
             Debug.Log("Finish");
         }
+    }
+
+    IEnumerator countDown(int seconds){
+        int count = seconds;
+
+        while(count > 0){
+            countDownText.GetComponent<TextMeshProUGUI>().text = count.ToString();
+            yield return new WaitForSeconds(1);
+            count--;
+        }
+        countDownText.GetComponent<TextMeshProUGUI>().text = "Start!";
+        yield return new WaitForSeconds(1);
+        getReadyMenu.SetActive(false);
+        startGame = true;
+    }
+
+    public void MainMenu(){
+        SceneManager.LoadScene(0);
+    }
+
+    public void ReturnToGame(){
+        isPause = false;
+    }
+
+    public void ExitGame(){
+        Application.Quit();
     }
 }
