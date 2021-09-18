@@ -50,19 +50,29 @@ public class playerScript : MonoBehaviour
         }
 
         // If Pause keybind pressed
-        if(Input.GetKeyDown(KeyCode.Escape)){
-            isPause = true;
-            pauseMenu.SetActive(true);
+        if(Input.GetKeyDown(KeyCode.Escape) && startGame){
+            if(!isPause){
+                isPause = true;
+                pauseMenu.SetActive(true);
+                Time.timeScale = 0;
+            }
+            else{
+                isPause = false;
+                pauseMenu.SetActive(false);
+                Time.timeScale = 1;
+            }
+
         }
     }
     
     void OnTriggerEnter(Collider other){
         // Death on Wall Collision
         if(other.tag == "wall"){
-            transform.gameObject.SetActive(false);
             for(int i = 0; i < 17; i++){
                 Instantiate(deadPrefab, transform.position, Quaternion.identity);
             }
+            StartCoroutine(wait(3));
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
         // Continue to Next Level
         if(other.tag == "finish"){
@@ -82,6 +92,15 @@ public class playerScript : MonoBehaviour
         yield return new WaitForSeconds(1);
         getReadyMenu.SetActive(false);
         startGame = true;
+    }
+
+    IEnumerator wait(int seconds){
+        int count = seconds;
+
+        while(count > 0){
+            yield return new WaitForSeconds(1);
+            count--;
+        }
     }
 
     public void MainMenu(){

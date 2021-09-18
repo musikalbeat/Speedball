@@ -19,9 +19,10 @@ public class finishLine : MonoBehaviour
 
     void OnTriggerEnter()
     {
-        int sceneCount = SceneManager.sceneCount;
+        int sceneTotal = SceneManager.sceneCountInBuildSettings;
         int index = SceneManager.GetActiveScene().buildIndex;
-        if(index < sceneCount){
+        Debug.Log(sceneTotal);
+        if(index < sceneTotal){
             SceneManager.LoadScene(index + 1);
         }
         else{
